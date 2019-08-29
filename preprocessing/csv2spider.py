@@ -1,3 +1,7 @@
+"""
+Converts sql+question CSV into Spider format JSON
+"""
+
 import argparse
 from process_sql import get_sql
 import sqlparse
@@ -133,9 +137,5 @@ if __name__ == "__main__":
 
   process(args.db_id, args.input_file, args.table_file, args.output_file)
 
-
-
-# db_id, input_file, table_file, output_file = "SS30", "~/Downloads/ss30_traindev.csv", "~/Downloads/SS30/ss30_tables.json" "~/Downloads/ss30_traindev.json"
-# data = pd.read_csv(input_file)
-# q = data[0:1]['query'][0]
-# s = sqlparse.parse(q)[0]
+# Example usage -
+# python csv2spider.py -d SS30 -i ss30_traindev.csv -t SS30/ss30_tables.json -o ss30_traindev.json
