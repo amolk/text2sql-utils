@@ -65,6 +65,40 @@ class Schema:
 
     return idMap
 
+def do_fix_table_file_column_types(fpath):
+  gnn_column_types_map = {
+    "text": "text",
+    "string": "text",
+
+    "integer": "number",
+    "double": "number",
+    "float": "number",
+    "number": "number",
+
+    "datetime": "time",
+    "date": "time",
+    "time": "time",
+
+    "bool": "boolean",
+    "boolean": "boolean",
+
+    "primary": "primary",
+    "foreign": "foreign",
+
+    "others": "others",
+  }
+
+  with open(fpath) as f:
+    data = json.load(f)
+
+  for db_data in data:
+    db_data['column_types'] = [gnn_column_types_map[column_type.strip()] for column_type in db_data['column_types']]
+
+  print("Writing %s with fixed column types" % (fpath))
+  with open(fpath, 'w') as f:
+    json.dump(data, f, indent=2)
+  print("Done")
+
 def get_schemas_from_json(fpath):
   with open(fpath) as f:
     data = json.load(f)
@@ -138,7 +172,10 @@ def write_gold_file(query_texts, db_id, gold_file):
       f.write("%s\t%s\n" % (q, db_id))
   print("Done")
 
-def process(db_id, input_file, table_file, output_file):
+def process(db_id, input_file, table_file, fix_table_file_column_types, output_file):
+  if fix_table_file_column_types:
+    do_fix_table_file_column_types(table_file)
+
   schemas, db_names, tables = get_schemas_from_json(table_file)
   schema = schemas[db_id]
   table = tables[db_id]
@@ -157,10 +194,11 @@ if __name__ == "__main__":
   parser.add_argument('--db_id', '-d', dest='db_id', type=str, required=True, help='Database ID to output in the json file')
   parser.add_argument('--input-file', '-i', dest='input_file', type=str, required=True, help='CSV file with two columns - "query" SQL query, "label" corresponding natural language question')
   parser.add_argument('--table-file', '-t', dest='table_file', type=str, required=True, help='JSON file with schema information in Spider format')
+  parser.add_argument('--fix-table-file-column-types', '-f', action='store_true', dest='fix_table_file_column_types', default=False, help='Whether to map column types in tables json to one of boolean, foreign, number, others, primary, text, time. This is needed for GNN.')
   parser.add_argument('--output-file', '-o', dest='output_file', type=str, required=True, help='JSON file in Spider format')
   args = parser.parse_args()
 
-  process(args.db_id, args.input_file, args.table_file, args.output_file)
+  process(args.db_id, args.input_file, args.table_file, args.fix_table_file_column_types, args.output_file)
 
 # Example usage -
 # python csv2spider.py -d SS30 -i ss30_traindev.csv -t SS30/ss30_tables.json -o ss30_traindev.json
