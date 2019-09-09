@@ -117,6 +117,8 @@ def get_schema_from_json(fpath):
 
 def tokenize(string):
     string = str(string)
+    string = string.replace("\'\"","\"")
+    string = string.replace("\"\'","\"")
     string = string.replace("\'", "\"")  # ensures all string values wrapped by "" problem??
     quote_idxs = [idx for idx, char in enumerate(string) if char == '"']
     assert len(quote_idxs) % 2 == 0, "Unexpected quote"
@@ -280,6 +282,11 @@ def parse_value(toks, start_idx, tables_with_alias, schema, default_tables=None)
     if toks[idx] == '(':
         isBlock = True
         idx += 1
+
+    if toks[idx] == 'false':
+        toks[idx] = '"false"'
+    elif toks[idx] == 'true':
+        toks[idx] = '"true"'
 
     if toks[idx] == 'select':
         idx, val = parse_sql(toks, idx, tables_with_alias, schema)

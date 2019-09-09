@@ -99,23 +99,38 @@ def process_csv(input_file, schema, db_id, output_file):
     if "Token.Literal.String" in str(node.ttype):
       node.value = "value"
     elif "Token.Literal.Number" in str(node.ttype):
-      node.value = "1"
+      node.value = "value"
 
   data = pd.read_csv(input_file)
 
   queries = []
+  query_texts = []
 
   for index, row in data.iterrows():
-    sql_statement = sqlparse.parse(row['query'])[0]
+    question = row['label']
+    if type(question) is not str:
+      continue
+    question = question.replace('"', "'")
+    question = question.replace("\t", " ")
+
+    q = row['query']
+    q = q.replace("\t", " ")
+
+    sql_statement = sqlparse.parse(q)[0]
     query = str(sql_statement)
 
-    visit(sql_statement, remove_value_visitor)
+    # query_toks_no_value needs lowercase tokens
+    sql_statement = sqlparse.parse(q.lower())[0]
+    visit(sql_statement, remove_value_visitor) # replace values with placeholders
     query_no_value = str(sql_statement)
 
-    spider_query = SpiderQuery(query, query_no_value, row['label'], db_id, schema).to_json()
-    queries.append(spider_query)
+    spider_query = SpiderQuery(query, query_no_value, question, db_id, schema).to_json()
+    if spider_query['query'] and spider_query['question'] and len(spider_query['question_toks']) > 0:
+      queries.append(spider_query)
+      query_texts.append(q)
 
-  return queries
+  return query_texts, queries
+
 
 def process(db_id, input_file, table_file, output_file):
   schemas, db_names, tables = get_schemas_from_json(table_file)
@@ -123,9 +138,12 @@ def process(db_id, input_file, table_file, output_file):
   table = tables[db_id]
   schema = Schema(schema, table)
 
-  queries = process_csv(args.input_file, schema, args.db_id, args.output_file)
+  query_texts, queries = process_csv(args.input_file, schema, args.db_id, args.output_file)
+  print("Writing", output_file)
   with open(output_file, 'w') as f:
     json.dump(queries, f, sort_keys=True, indent=2, separators=(',', ': '))
+  print("Done")
+
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
