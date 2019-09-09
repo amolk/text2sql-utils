@@ -131,6 +131,12 @@ def process_csv(input_file, schema, db_id, output_file):
 
   return query_texts, queries
 
+def write_gold_file(query_texts, db_id, gold_file):
+  print("Writing gold file", gold_file)
+  with open(gold_file, 'w') as f:
+    for q in query_texts:
+      f.write("%s\t%s\n" % (q, db_id))
+  print("Done")
 
 def process(db_id, input_file, table_file, output_file):
   schemas, db_names, tables = get_schemas_from_json(table_file)
@@ -144,6 +150,7 @@ def process(db_id, input_file, table_file, output_file):
     json.dump(queries, f, sort_keys=True, indent=2, separators=(',', ': '))
   print("Done")
 
+  write_gold_file(query_texts, db_id, output_file.replace(".json", "_gold.sql"))
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
