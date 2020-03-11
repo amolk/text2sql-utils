@@ -1,0 +1,1 @@
+git+git://github.com/amolk/moz-sql-parser@dev#egg=moz_sql_parser
