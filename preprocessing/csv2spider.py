@@ -136,6 +136,8 @@ def process_csv(input_file, schema, db_id, output_file):
       node.value = "value"
 
   data = pd.read_csv(input_file)
+  if 'label' not in data.columns or 'query' not in data.columns:
+    raise Exception("Input CSV must contain label and query columns. Check if the file has a heading row.")
 
   queries = []
   query_texts = []

@@ -2,3 +2,5 @@ argparse
 inflection
 pandas
 nltk
+pandas
+sqlparse
