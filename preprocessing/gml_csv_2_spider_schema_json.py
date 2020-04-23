@@ -85,7 +85,7 @@ def create_schema_json(schema_db):
     this_table = underscore(item['Table'])
     column = underscore(item["Column"])
     column_index_dict[this_table + '.' + column] = idx + 1
-    is_primary_column = item['Primary Key']=='primary_key'
+    is_primary_column = item['Primary Key'] in ['primary_key', 'Primary Key', 'yes', 'Yes']
     description = item["Description"]
 
     if item['Joinable to']:
@@ -158,8 +158,13 @@ def get_spider_table(db_info, db_id):
     for col in db_info[table]:
       new_table["column_names_original"].append([table_counter, col])
       new_table["column_names"].append([table_counter, clean_column_table_name(col)])
-      if db_info[table][col]['type'].lower() == 'integer' or db_info[table][col]['type'].lower() == 'int' or db_info[table][col]['type'].lower()=='double' or db_info[table][col]['type'].lower()=='float':
+      type_text = db_info[table][col]['type'].lower()
+      if type_text in ['integer', 'int', 'double', 'float']:
         type = "number"
+      elif type_text in ['datetime', 'time']:
+        type = "time"
+      elif type_text in ['boolean']:
+        type = "boolean"
       else:
         type = "text"
       new_table["column_types"].append(type)
