@@ -117,9 +117,15 @@ def create_schema_json(schema_db):
   new_table_dict = {last_table:table_dict}
   json_dict = {**json_dict, **new_table_dict}
 
+  if len(table_dict.keys()) < 2:
+    raise Exception("GNN requires at least 2 tables. Add a dummy table with 2 dummy columns if you have a single table in your GML.")
+
   # Make sure join columns are valid
   all_columns = set(column_index_dict.keys())
   for table, table_info in json_dict.items():
+    if len(table_info.keys()) < 2:
+      raise Exception(f"GNN requires each table to have at least 2 columns. Table {table} has a single column. Add a dummy column for this table in your GML.")
+
     for column, column_info in table_info.items():
       if column_info['joinable_to']:
         if not set(column_info['joinable_to']).issubset(all_columns):
