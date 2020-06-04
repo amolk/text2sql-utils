@@ -161,7 +161,7 @@ def get_spider_table(db_info, db_id):
       type_text = db_info[table][col]['type'].lower()
       if type_text in ['integer', 'int', 'double', 'float']:
         type = "number"
-      elif type_text in ['datetime', 'time']:
+      elif type_text in ['datetime', 'time', 'date']:
         type = "time"
       elif type_text in ['boolean']:
         type = "boolean"
