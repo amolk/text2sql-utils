@@ -4,3 +4,4 @@ pandas
 nltk
 pandas
 sqlparse
+pyyaml
